@@ -17,16 +17,16 @@ import duckdb
 from quixstreams import Application
 
 BROKER = "127.0.0.1:19092"
-TOPIC = "quakes"
+TOPIC = "bluesky-posts"
 OUT_DIR = "data/raw"
 BATCH_SIZE = 1000
 BATCH_SECONDS = 60
 CRASH_AFTER_WRITE = "crash" in sys.argv[1:]
 
 SCHEMA = """kafka_partition INTEGER, kafka_offset BIGINT, kafka_key VARCHAR,
-    action VARCHAR, unid VARCHAR, event_time VARCHAR, mag DOUBLE, magtype VARCHAR,
-    region VARCHAR, lat DOUBLE, lon DOUBLE, depth DOUBLE, lastupdate VARCHAR,
-    landed_at TIMESTAMP, raw VARCHAR"""
+            action VARCHAR, kind VARCHAR, operation VARCHAR, did VARCHAR, rkey VARCHAR,
+            time_us BIGINT, lang VARCHAR, text VARCHAR,
+            landed_at TIMESTAMP, raw VARCHAR"""
 
 
 def number(x):
@@ -41,25 +41,28 @@ def to_row(msg):
     raw = msg.value().decode("utf8", errors="replace") if msg.value() else ""
     try:
         m = json.loads(raw)
-        p = m["data"]["properties"]
+        d = m["data"]
         action = m.get("action", "unknown")
+        c = d.get("commit") or {} 
+        r = c.get("record") or {}   
     except (ValueError, KeyError, TypeError, AttributeError):
-        m, p, action = {}, {}, "malformed"
+        d, c, r, action = {}, {}, {}, "malformed"
+    langs = r.get("langs") or [None]
     key = msg.key().decode("utf8", errors="replace") if msg.key() else None
-    return (msg.partition(), msg.offset(), key, action, p.get("unid"), p.get("time"),
-            number(p.get("mag")), p.get("magtype"), p.get("flynn_region"),
-            number(p.get("lat")), number(p.get("lon")), number(p.get("depth")),
-            p.get("lastupdate"), datetime.now(timezone.utc).replace(tzinfo=None), raw)
+    return (msg.partition(), msg.offset(), key, action, d.get("kind"),
+            c.get("operation"), d.get("did"), c.get("rkey"), d.get("time_us"),
+            langs[0], r.get("text"),
+            datetime.now(timezone.utc).replace(tzinfo=None), raw)
 
 
 def write_batch(rows):
     """Write one Parquet file. Write to .tmp first, then rename,
     so the flow never reads a half-written file."""
     os.makedirs(OUT_DIR, exist_ok=True)
-    name = f"{OUT_DIR}/quakes_{datetime.now(timezone.utc):%Y%m%dT%H%M%S}_{uuid.uuid4().hex[:6]}.parquet"
+    name = f"{OUT_DIR}/bluesky_{datetime.now(timezone.utc):%Y%m%dT%H%M%S}_{uuid.uuid4().hex[:6]}.parquet"
     con = duckdb.connect()  # in memory: no database file, no lock
     con.execute(f"CREATE TABLE batch ({SCHEMA})")
-    con.executemany(f"INSERT INTO batch VALUES ({', '.join(['?'] * 15)})", rows)
+    con.executemany(f"INSERT INTO batch VALUES ({', '.join(['?'] * len(rows[0]))})", rows)
     con.execute(f"COPY batch TO '{name}.tmp' (FORMAT parquet)")
     con.close()
     os.replace(f"{name}.tmp", name)
@@ -67,7 +70,7 @@ def write_batch(rows):
 
 
 def main():
-    app = Application(broker_address=BROKER, consumer_group="quakes_lander",
+    app = Application(broker_address=BROKER, consumer_group="bluesky_posts_lander",
                       auto_offset_reset="earliest", loglevel="WARNING")
     with app.get_consumer() as consumer:
         consumer.subscribe([TOPIC])
