@@ -3,10 +3,10 @@
 Add to the entry at the end of every class, and whenever you stop working. Short lines are fine. Include the raw record count when you have one.
 
 ## Session 1 · Thu 05 Nov
-- Done:
-- Raw records so far:
-- Next:
-- Blocked:
+- Done: Finished Checkpoint A and B. Decided to work with bluesky-posts.
+- Raw records so far: 7,758
+- Next: Checkpoint C and chaos round Checkpoint D
+- Blocked: N/A
 
 ## Session 2 · Mon 09 Nov
 - Done:
