@@ -1,5 +1,5 @@
 ---
-course: DS 3022, Systems II: Advanced Data Science Systems
+course: DS 3022, Systems II Advanced Data Science Systems
 term: Fall 2026, UVA in Valencia
 artifact: Data Project 3, Grading Rubric
 project: Data Project 3, Stream Ingestion (individual)
