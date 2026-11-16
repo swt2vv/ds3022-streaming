@@ -8,6 +8,7 @@ import sys
 import duckdb
 import matplotlib
 
+
 matplotlib.use("Agg")  # draw to a file, no window
 import matplotlib.pyplot as plt
 from prefect import flow, get_run_logger, task
@@ -79,7 +80,9 @@ def chart():
         df = con.execute("""
             SELECT hour, lang, posts
             FROM mart_hourly
-            WHERE lang IN (
+            WHERE hour >= TIMESTAMP '2026-11-12 00:00:00'
+                AND hour <  TIMESTAMP '2026-11-13 00:00:00'
+                AND lang IN (
                     SELECT lang 
                     FROM mart_hourly
                     GROUP BY lang 
@@ -87,7 +90,7 @@ def chart():
                     LIMIT 5)
             ORDER BY hour, lang
         """).df()
-    
+    df = df.replace('en','General English').replace('es', 'Spanish').replace('ko', 'Korean').replace('ja', 'Japanese').replace('de', 'German').replace('fr', 'French').replace('pt', 'Portuguese').replace('nl', 'Dutch').replace('en-US', 'U.S. English').replace('ar', 'Arabic').replace('it', 'Italian').replace('tr', 'Turkish')
     pivot = df.pivot(index="hour", columns="lang", values="posts").fillna(0)
     hours, langs = pivot.index, pivot.columns
 
@@ -101,10 +104,10 @@ def chart():
         ax.bar(x + offset, pivot[lang], width, label=lang)
 
     ax.set_xticks(x)
-    ax.set_xticklabels([h.strftime("%d %b %H:%M") for h in hours],
+    ax.set_xticklabels([h.strftime("%H:%M") for h in hours],
                        rotation=45, ha="right")
     ax.set_title("Posts per Hour by Language")
-    ax.set_xlabel("Hour (UTC)")
+    ax.set_xlabel("Hour (UTC) on Nov 12th")
     ax.set_ylabel("Posts")
     ax.legend(title="Language")
     fig.tight_layout()
