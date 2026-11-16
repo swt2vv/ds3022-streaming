@@ -1,7 +1,3 @@
-"""Prefect flow: raw Parquet -> DuckDB (two kinds of duplicates removed) -> one chart.
-
-  python quakes_flow.py
-"""
 import os
 import sys
 
@@ -137,7 +133,7 @@ def chart2():
     os.makedirs("charts", exist_ok=True)
     plt.figure(figsize=(8, 4))
     plt.bar(x = df['lang'], height = df['posts'], color="#2a7fb8")
-    plt.title("Total Posts on BlueSky Per Top 10 Languages Within Sample Data")
+    plt.title("Total Posts on BlueSky Per Top 10 Languages")
     plt.xlabel("Language")
     plt.xticks(rotation = 45)
     plt.ylabel("Posts")

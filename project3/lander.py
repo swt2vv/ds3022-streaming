@@ -1,11 +1,4 @@
-"""Kafka topic "quakes" -> raw Parquet files in data/raw/.
 
-A batch is written when it has 1000 records or is 60 seconds old.
-Offsets are stored only AFTER the file exists: at-least-once.
-
-  python quakes_lander.py
-  python quakes_lander.py crash   # experiment: crash after the first file, before storing offsets
-"""
 import json
 import os
 import sys
@@ -29,11 +22,6 @@ SCHEMA = """kafka_partition INTEGER, kafka_offset BIGINT, kafka_key VARCHAR,
             landed_at TIMESTAMP, raw VARCHAR"""
 
 
-def number(x):
-    try:
-        return float(x)
-    except (TypeError, ValueError):
-        return None
 
 
 def to_row(msg):

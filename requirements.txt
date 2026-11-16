@@ -5,3 +5,5 @@ tornado
 duckdb
 pymysql
 pandas
+prefect
+matplotlib

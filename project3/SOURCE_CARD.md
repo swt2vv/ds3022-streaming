@@ -2,14 +2,26 @@
 
 Fill this in during Session 1 (Thu 05 Nov) with **measured** numbers from `python probe.py <source>`. Then tick the self-check in section 7 **before** you build the producer: it is how you check that your source will work for the whole project.
 
-**Name:**
-**Date:**
+**Name:** Rachel
+
+**Due Date:** Nov. 16, 2026
 
 ## 1. The source
-- Source and URL: BlueSky wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post
-- Method: WebSocket (push)
-- Account, key or User-Agent needed: N/A, stream is public
-- Limits I know about (rate limits, paging, reconnects): No limits from probe run of 60 seconds. No errors or authorization needed, but errors could show up in a longer runtime, such as connection drop. Also, some posts are missing fields such as langs or texts. 
+- Source and URL: 
+
+**BlueSky wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post**
+
+- Method: 
+
+**WebSocket (push)**
+
+- Account, key or User-Agent needed: 
+
+**N/A, stream is public**
+
+- Limits I know about (rate limits, paging, reconnects): 
+
+**No limits from probe run of 60 seconds. No errors or authorization needed, but errors could show up in a longer runtime, such as connection drop. Also, some posts are missing fields such as langs or texts.**
 
 ## 2. One real message
 Paste one message from the probe (shorten long text fields):
@@ -49,34 +61,55 @@ Paste one message from the probe (shorten long text fields):
 ```
 
 ## 3. Volume maths
-- Measured rate (from the probe): 54.32 per second
-- Live capture needed for 50,000: 15 minutes
-- History / backfill available? How many days? Jetstream can replay a limited window with ?cursor=<time_us>. Not needed as live capture allows for 50,000 within 15 minutes. 
-- My plan to reach 50,000 raw records by the start of Session 3 (Thu 12 Nov): Only needs roughly 15 minutes. Run the producer Wednesday, a day before class so that 50,000 are collected, even with errors or disconnections, and if I have issues, I can ask the professor.
+- Measured rate (from the probe): 
+
+**54.32 per second**
+
+- Live capture needed for 50,000: 
+
+**15 minutes**
+
+- History / backfill available? How many days? 
+
+**Jetstream can replay a limited window with ?cursor=<time_us>. Not needed as live capture allows for 50,000 within 15 minutes.**
+
+- My plan to reach 50,000 raw records by the start of Session 3 (Thu 12 Nov): 
+
+**Only needs roughly 15 minutes. Run the producer Wednesday, a day before class so that 50,000 are collected, even with errors or disconnections, and if I have issues, I can ask the professor.**
 
 ## 4. Topic design
-- Topic name: bluesky-posts (created with `-p 3 -r 3` **before** the producer runs)
-- Kafka key: did
-- Why this key (ordering, spread across partitions): This key is order sensitive as some posts may be deleted after it's posted. Also, did is present in 100% of the messages. 
+- Topic name: 
+
+**bluesky-posts (created with `-p 3 -r 3` **before** the producer runs)**
+
+- Kafka key: 
+
+**did**
+
+- Why this key (ordering, spread across partitions): 
+
+**This key is order sensitive as some posts may be deleted after it's posted. Also, 'did' is present in the valid post messages and keeps posts from the same user on the same Kafka partition.
 
 ## 5. Duplicates
 - What makes two records **the same Kafka record**? (landed twice by the lander) 
 
-When there is a crash and reset and the same records are sent to the lander. 
+**When records have the same partition and offset values. This can occur when there is a crash and reset and the same records are sent to the lander.** 
 
 
 - What makes two records **the same thing** (the same trade, post, aircraft position)? 
 
-When there are different messages, but referring to the same post. 
-
+**When records have the same did and rkey values. This can occcur when there are different messages, but it refers to the same post.**
 
 - If the same thing can arrive in several versions, which one do I keep? 
 
-Keep the one with the most recent timestamp. 
+**Keep the one with the most recent timestamp.** 
 
 
 ## 6. Research question (draft)
-- One question I could answer with time windows, a comparison, an anomaly or a join: How does the posting rate by language change by hour of the day
+- One question I could answer with time windows, a comparison, an anomaly or a join: 
+
+Which languages has the most BlueSky posts within my data?
+
 
 ## 7. Self-check (checkpoint A)
 Tick a box by changing `[ ]` to `[x]`. If a box stays empty, fix the card or choose another source from SOURCES.md. `kit/check_project.py` counts these boxes.
